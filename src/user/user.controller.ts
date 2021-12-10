@@ -36,4 +36,10 @@ export class UserController {
   ): Promise<iUser> {
     return await this.userService.updateOne(id, user);
   }
+
+  @Post('/login')
+  async login(@Body() user: iUser): Promise<any> {
+    const jwt = await this.userService.login(user);
+    return { token: jwt };
+  }
 }
