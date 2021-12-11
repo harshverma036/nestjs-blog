@@ -6,7 +6,13 @@ import {
   Param,
   Post,
   Put,
+  UseGuards,
+  Request
 } from '@nestjs/common';
+import { hasRoles } from 'src/auth/decorator/roles.decorator';
+import { JwtAuthGuard } from 'src/auth/guards/jwt.guard';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { UserRole } from './models/user.entity';
 import { iUser } from './models/user.interface';
 import { UserService } from './user.service';
 
@@ -16,14 +22,19 @@ export class UserController {
 
   @Post('/add')
   async create(@Body() user: iUser): Promise<iUser> {
-    return await this.userService.create(user);
+    const nUser = await this.userService.create(user);
+    delete nUser.password;
+    return nUser;
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get(':id')
   async findOne(@Param('id') id: number): Promise<iUser> {
     return await this.userService.findOne(id);
   }
 
+  @hasRoles(UserRole.ADMIN)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Delete(':id')
   async deleteOne(@Param('id') id: number): Promise<any> {
     return await this.userService.deleteOne(id);
